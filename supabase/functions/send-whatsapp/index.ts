@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
     let waMessageId: string | null = null;
 
     // Build the OpenWA API URL
-    const serverUrl = (settings.server_url || 'http://localhost:2785').replace(/\/+$/, '');
+    const serverUrl = (settings.server_url || 'https://commissioner-accomplished-ppm-happens.trycloudflare.com').replace(/\/+$/, '');
     const sessionId = settings.session_id || 'default';
     const chatId = formatPhoneToWAId(phone_number);
 

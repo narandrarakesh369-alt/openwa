@@ -40,7 +40,7 @@ const Auth = () => {
         .from("profiles")
         .select("school_id")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
 
       if (profile?.school_id) {
         // Fetch the school's logo
@@ -48,7 +48,7 @@ const Auth = () => {
           .from("schools")
           .select("logo_url, tagline")
           .eq("id", profile.school_id)
-          .single();
+          .maybeSingle();
 
         if (school?.logo_url) {
           setSchoolLogo(school.logo_url);
@@ -82,7 +82,7 @@ const Auth = () => {
           .from("profiles")
           .select("school_id")
           .eq("id", authData.user.id)
-          .single();
+          .maybeSingle();
 
         // Check if user is super_admin (they can always login)
         const { data: roleData } = await supabase
@@ -90,7 +90,7 @@ const Auth = () => {
           .select("role")
           .eq("user_id", authData.user.id)
           .eq("role", "super_admin")
-          .single();
+          .maybeSingle();
 
         const isSuperAdmin = !!roleData;
 
@@ -100,7 +100,7 @@ const Auth = () => {
             .from("schools")
             .select("is_active, name")
             .eq("id", profile.school_id)
-            .single();
+            .maybeSingle();
 
           if (school && !school.is_active) {
             // Sign out the user immediately
@@ -119,9 +119,18 @@ const Auth = () => {
 
       navigate("/dashboard");
     } catch (error: any) {
+      let errorMsg = error.message || "An unexpected error occurred";
+      
+      // Make network errors user-friendly
+      if (errorMsg.toLowerCase().includes("failed to fetch") || errorMsg.toLowerCase().includes("networkerror")) {
+        errorMsg = "Unable to connect to the server. Please check your internet connection and try again.";
+      } else if (errorMsg.toLowerCase().includes("invalid login")) {
+        errorMsg = "Invalid email or password. Please check your credentials.";
+      }
+      
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Sign In Failed",
+        description: errorMsg,
         variant: "destructive"
       });
     } finally {

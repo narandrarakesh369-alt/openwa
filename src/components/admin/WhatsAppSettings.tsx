@@ -55,7 +55,7 @@ export const WhatsAppSettings = () => {
   const [schoolId, setSchoolId] = useState<string>("");
   const [schoolName, setSchoolName] = useState<string>("");
   const [settings, setSettings] = useState({
-    server_url: "http://localhost:2785",
+    server_url: "https://commissioner-accomplished-ppm-happens.trycloudflare.com",
     api_key: "owa_k1_322c97c576644741ef2f38ffef81d63d969ceebaf9a4336ede757b2f0a165116",
     session_id: "schools",
     active_status: true,

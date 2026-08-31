@@ -178,7 +178,7 @@ serve(async (req) => {
     const uniqueRecipients = Array.from(phoneToStudentMap.entries());
     console.log(`Prepared ${uniqueRecipients.length} unique parent phone numbers for broadcast`);
 
-    const serverUrl = (settings.server_url || 'http://localhost:2785').replace(/\/+$/, '');
+    const serverUrl = (settings.server_url || 'https://commissioner-accomplished-ppm-happens.trycloudflare.com').replace(/\/+$/, '');
     const sessionId = settings.session_id || 'default';
     const apiKey = settings.api_key || '';
 

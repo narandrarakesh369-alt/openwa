@@ -55,7 +55,7 @@ export const WhatsAppSettings = () => {
   const [schoolId, setSchoolId] = useState<string>("");
   const [schoolName, setSchoolName] = useState<string>("");
   const [settings, setSettings] = useState({
-    server_url: "https://commissioner-accomplished-ppm-happens.trycloudflare.com",
+    server_url: "https://eden-donations-create-engagement.trycloudflare.com",
     api_key: "owa_k1_322c97c576644741ef2f38ffef81d63d969ceebaf9a4336ede757b2f0a165116",
     session_id: "schools",
     active_status: true,
@@ -98,7 +98,7 @@ export const WhatsAppSettings = () => {
           .eq("school_id", roleData.school_id)
           .maybeSingle();
 
-        const activeServer = settingsData?.server_url || "https://commissioner-accomplished-ppm-happens.trycloudflare.com";
+        const activeServer = settingsData?.server_url || "https://eden-donations-create-engagement.trycloudflare.com";
         const activeKey = settingsData?.api_key || "owa_k1_322c97c576644741ef2f38ffef81d63d969ceebaf9a4336ede757b2f0a165116";
         const activeSession = settingsData?.session_id || "schools";
 

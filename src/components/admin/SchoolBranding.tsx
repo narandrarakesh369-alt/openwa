@@ -114,32 +114,9 @@ export const SchoolBranding = () => {
     try {
       setUploading(true);
 
-      // Process and optimize image
+      // Process and optimize image to crisp Base64 PNG
       const optimizedUrl = await optimizeImageFile(file);
-
-      // Try uploading to Supabase Storage if a bucket is configured, otherwise fallback to Data URL
-      let finalLogoUrl = optimizedUrl;
-
-      try {
-        const fileName = `${schoolId}-logo-${Date.now()}.png`;
-        const filePath = `school-logos/${fileName}`;
-        
-        // Check if storage bucket exists and upload
-        const { error: uploadError } = await supabase.storage
-          .from('certificates')
-          .upload(filePath, file, { upsert: true });
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from('certificates')
-            .getPublicUrl(filePath);
-          if (publicUrl) {
-            finalLogoUrl = publicUrl;
-          }
-        }
-      } catch (storageErr) {
-        console.warn("Storage upload skipped, using optimized data URL:", storageErr);
-      }
+      const finalLogoUrl = optimizedUrl;
 
       setLogoUrl(finalLogoUrl);
 

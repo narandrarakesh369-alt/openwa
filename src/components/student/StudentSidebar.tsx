@@ -31,8 +31,10 @@ export function StudentSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [schoolInfo, setSchoolInfo] = useState<{ name: string; logo_url: string | null } | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
+    setImageError(false);
     const fetchSchoolInfo = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -80,17 +82,18 @@ export function StudentSidebar() {
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
-          {schoolInfo?.logo_url ? (
-            <div className="h-9 w-9 rounded-xl bg-white/90 border border-border/50 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+          {schoolInfo?.logo_url && !imageError ? (
+            <div className="h-9 w-9 rounded-xl bg-white/95 border border-border/50 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
               <img 
                 src={schoolInfo.logo_url} 
                 alt="Logo" 
                 className="max-h-full max-w-full object-contain"
+                onError={() => setImageError(true)}
               />
             </div>
           ) : (
-            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-              <GraduationCap className="h-5 w-5" />
+            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-sm">
+              {schoolInfo?.name ? schoolInfo.name.charAt(0).toUpperCase() : <GraduationCap className="h-5 w-5" />}
             </div>
           )}
           <div className="overflow-hidden">

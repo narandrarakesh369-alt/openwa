@@ -37,8 +37,10 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const { toast } = useToast();
   const collapsed = state === "collapsed";
   const [schoolBranding, setSchoolBranding] = useState<{ name: string; logo_url: string | null } | null>(null);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
+    setImageError(false);
     const fetchBranding = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -169,17 +171,18 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             "flex items-center gap-3",
             collapsed && "justify-center"
           )}>
-            {schoolBranding?.logo_url ? (
-              <div className="h-10 w-10 rounded-xl bg-white/90 border border-border/50 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+            {schoolBranding?.logo_url && !imageError ? (
+              <div className="h-10 w-10 rounded-xl bg-white/95 border border-border/50 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
                 <img 
                   src={schoolBranding.logo_url} 
                   alt={schoolBranding.name || "School Logo"} 
                   className="max-h-full max-w-full object-contain"
+                  onError={() => setImageError(true)}
                 />
               </div>
             ) : (
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 shadow-sm">
-                <GraduationCap className="h-5 w-5 text-primary-foreground" />
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 shadow-sm text-primary-foreground font-bold text-lg">
+                {schoolBranding?.name ? schoolBranding.name.charAt(0).toUpperCase() : <GraduationCap className="h-5 w-5" />}
               </div>
             )}
 

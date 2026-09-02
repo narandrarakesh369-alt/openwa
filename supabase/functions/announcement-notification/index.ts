@@ -178,7 +178,7 @@ serve(async (req) => {
     const uniqueRecipients = Array.from(phoneToStudentMap.entries());
     console.log(`Prepared ${uniqueRecipients.length} unique parent phone numbers for broadcast`);
 
-    const serverUrl = (settings.server_url || 'https://eden-donations-create-engagement.trycloudflare.com').replace(/\/+$/, '');
+    const serverUrl = (settings.server_url || 'https://openwa-server-1ii2.onrender.com').replace(/\/+$/, '');
     const sessionId = settings.session_id || 'default';
     const apiKey = settings.api_key || '';
 

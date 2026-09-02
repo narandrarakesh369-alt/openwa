@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -22,12 +23,41 @@ import {
   BookOpen,
   Settings,
   LogOut,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function StudentSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [schoolInfo, setSchoolInfo] = useState<{ name: string; logo_url: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchSchoolInfo = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("school_id, schools:school_id(name, logo_url)")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (roleData?.schools) {
+          const schoolObj: any = roleData.schools;
+          setSchoolInfo({
+            name: schoolObj.name || "School Portal",
+            logo_url: schoolObj.logo_url || null,
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load school info for student sidebar:", e);
+      }
+    };
+
+    fetchSchoolInfo();
+  }, []);
 
   const menuItems = [
     { title: "Dashboard", icon: LayoutDashboard, path: "/student/dashboard" },
@@ -49,7 +79,27 @@ export function StudentSidebar() {
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="border-b p-4">
-        <h2 className="text-lg font-semibold">Student Portal</h2>
+        <div className="flex items-center gap-3">
+          {schoolInfo?.logo_url ? (
+            <div className="h-9 w-9 rounded-xl bg-white/90 border border-border/50 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+              <img 
+                src={schoolInfo.logo_url} 
+                alt="Logo" 
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+          ) : (
+            <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+          )}
+          <div className="overflow-hidden">
+            <h2 className="text-sm font-semibold truncate leading-tight">
+              {schoolInfo?.name || "Student Portal"}
+            </h2>
+            <p className="text-[11px] text-muted-foreground">Student Portal</p>
+          </div>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -73,8 +123,8 @@ export function StudentSidebar() {
       </SidebarContent>
       <SidebarFooter className="border-t p-4">
         <Button
-          variant="ghost"
-          className="w-full justify-start"
+          variant="outline"
+          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 mr-2" />

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { 
   LayoutDashboard, School, BookOpen, Calendar, LogOut, Settings, 
   DollarSign, Clock, FileText, Award, 
@@ -35,6 +36,34 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
   const location = useLocation();
   const { toast } = useToast();
   const collapsed = state === "collapsed";
+  const [schoolBranding, setSchoolBranding] = useState<{ name: string; logo_url: string | null } | null>(null);
+
+  useEffect(() => {
+    const fetchBranding = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("school_id, schools:school_id(name, logo_url)")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (roleData?.schools) {
+          const schoolObj: any = roleData.schools;
+          setSchoolBranding({
+            name: schoolObj.name || "ArchEdu",
+            logo_url: schoolObj.logo_url || null,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load sidebar branding:", err);
+      }
+    };
+
+    fetchBranding();
+  }, [userRole]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -140,13 +169,28 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             "flex items-center gap-3",
             collapsed && "justify-center"
           )}>
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-              <GraduationCap className="h-5 w-5 text-primary-foreground" />
-            </div>
+            {schoolBranding?.logo_url ? (
+              <div className="h-10 w-10 rounded-xl bg-white/90 border border-border/50 p-1 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                <img 
+                  src={schoolBranding.logo_url} 
+                  alt={schoolBranding.name || "School Logo"} 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 shadow-sm">
+                <GraduationCap className="h-5 w-5 text-primary-foreground" />
+              </div>
+            )}
+
             {!collapsed && (
-              <div>
-                <h2 className="font-bold text-sidebar-foreground text-lg">ArchEdu</h2>
-                <p className="text-xs text-sidebar-foreground/60 capitalize">{userRole?.replace('_', ' ')}</p>
+              <div className="overflow-hidden">
+                <h2 className="font-bold text-sidebar-foreground text-base truncate leading-tight" title={schoolBranding?.name || "ArchEdu"}>
+                  {schoolBranding?.name || "ArchEdu"}
+                </h2>
+                <p className="text-xs text-sidebar-foreground/60 capitalize truncate">
+                  {userRole?.replace('_', ' ')}
+                </p>
               </div>
             )}
           </div>

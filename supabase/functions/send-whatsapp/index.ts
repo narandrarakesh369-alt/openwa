@@ -179,14 +179,32 @@ Deno.serve(async (req) => {
     // Build the OpenWA API URL
     const serverUrl = (settings.server_url || 'https://openwa-server-1ii2.onrender.com').replace(/\/+$/, '');
     const sessionId = settings.session_id || 'default';
-    const chatId = formatPhoneToWAId(phone_number);
+    let activeSessionId = sessionId;
 
-    console.log(`Sending via OpenWA: ${serverUrl}/api/sessions/${sessionId}/messages/send-text to ${chatId}`);
+    // If sessionId does not look like a UUID, auto-resolve it from the OpenWA server
+    if (!activeSessionId || !activeSessionId.includes('-')) {
+      try {
+        const sessionsRes = await fetch(`${serverUrl}/api/sessions`, {
+          headers: { 'X-API-Key': settings.api_key || '' }
+        });
+        if (sessionsRes.ok) {
+          const sessions = await sessionsRes.json();
+          const readySession = sessions.find((s: any) => s.status === 'ready' || s.status === 'connected') || sessions[0];
+          if (readySession?.id) {
+            activeSessionId = readySession.id;
+          }
+        }
+      } catch (sessErr) {
+        console.warn('Could not auto-resolve session ID from OpenWA:', sessErr);
+      }
+    }
+
+    console.log(`Sending via OpenWA: ${serverUrl}/api/sessions/${activeSessionId}/messages/send-text to ${chatId}`);
 
     try {
       // Send message via OpenWA self-hosted API
       const openwaResponse = await fetch(
-        `${serverUrl}/api/sessions/${sessionId}/messages/send-text`,
+        `${serverUrl}/api/sessions/${activeSessionId}/messages/send-text`,
         {
           method: 'POST',
           headers: {

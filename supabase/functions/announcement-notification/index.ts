@@ -181,6 +181,25 @@ serve(async (req) => {
     const serverUrl = (settings.server_url || 'https://openwa-server-1ii2.onrender.com').replace(/\/+$/, '');
     const sessionId = settings.session_id || 'default';
     const apiKey = settings.api_key || '';
+    let activeSessionId = sessionId;
+
+    // If sessionId does not look like a UUID, auto-resolve it from the OpenWA server
+    if (!activeSessionId || !activeSessionId.includes('-')) {
+      try {
+        const sessionsRes = await fetch(`${serverUrl}/api/sessions`, {
+          headers: { 'X-API-Key': apiKey }
+        });
+        if (sessionsRes.ok) {
+          const sessions = await sessionsRes.json();
+          const readySession = sessions.find((s: any) => s.status === 'ready' || s.status === 'connected') || sessions[0];
+          if (readySession?.id) {
+            activeSessionId = readySession.id;
+          }
+        }
+      } catch (sessErr) {
+        console.warn('Could not auto-resolve session ID for announcements:', sessErr);
+      }
+    }
 
     let sentCount = 0;
     let failedCount = 0;
@@ -192,7 +211,7 @@ serve(async (req) => {
       let status = 'Sent';
 
       try {
-        const response = await fetch(`${serverUrl}/api/sessions/${sessionId}/messages/send-text`, {
+        const response = await fetch(`${serverUrl}/api/sessions/${activeSessionId}/messages/send-text`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

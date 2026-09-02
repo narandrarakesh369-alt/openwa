@@ -140,12 +140,10 @@ export const WhatsAppSettings = () => {
         let found = sessions.find((s) => s.name === sessionName || s.id === sessionName);
         if (!found && sessions.length > 0) {
           found = sessions.find((s) => s.status === "ready" || s.status === "connected") || sessions[0];
-          if (found) {
-            setSettings((prev) => ({ ...prev, session_id: found.name || found.id }));
-          }
         }
 
         if (found) {
+          setSettings((prev) => ({ ...prev, session_id: found.id }));
           const isReady = found.status === "ready" || found.status === "connected" || found.status === "authenticated" || (found.engineLoaded && !!found.phone);
 
           setSessionData({
@@ -464,8 +462,24 @@ export const WhatsAppSettings = () => {
       if (cleaned.length <= 10) cleaned = "91" + cleaned;
       const chatId = cleaned + "@c.us";
 
+      let activeSessionId = sessionData.id || settings.session_id;
+
+      // If activeSessionId doesn't look like a UUID, resolve it from the server
+      if (!activeSessionId || !activeSessionId.includes("-")) {
+        const listRes = await fetch(`${cleanUrl}/api/sessions`, {
+          headers: { "X-API-Key": settings.api_key },
+        });
+        if (listRes.ok) {
+          const sessions: any[] = await listRes.json();
+          const readySession = sessions.find((s) => s.status === "ready" || s.status === "connected") || sessions[0];
+          if (readySession?.id) {
+            activeSessionId = readySession.id;
+          }
+        }
+      }
+
       const response = await fetch(
-        `${cleanUrl}/api/sessions/${settings.session_id}/messages/send-text`,
+        `${cleanUrl}/api/sessions/${activeSessionId}/messages/send-text`,
         {
           method: "POST",
           headers: {
